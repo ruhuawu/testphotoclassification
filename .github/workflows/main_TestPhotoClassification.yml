@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - TestImgClassification
+name: Build and deploy Python app to Azure Web App - TestPhotoClassification
 
 on:
   push:
@@ -57,6 +57,6 @@ jobs:
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'TestImgClassification'
+          app-name: 'TestPhotoClassification'
           slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_7c34dec3e2e742cdb5b550768fdde60e }}
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_c0e066b5ec014b2a9294d060425ca9d6 }}
