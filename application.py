@@ -13,7 +13,6 @@ ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'png'])
 IMAGE_SIZE = (224, 224)
 UPLOAD_FOLDER = 'uploads'
 vgg16 = VGG16(weights='imagenet')
-   
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -53,9 +52,8 @@ def upload_file():
             id = uuid.uuid1()
             output = predict(file_path)
             label = list(output.keys())[0]
-            params = [id, label, True, b]
-            # cluster.connect().execute('CREATE TABLE IF NOT EXISTS images.pathole (image_id uuid PRIMARY KEY, label text, is_pathold boolean, file blob)')
-            cluster.connect().execute("INSERT INTO images.pathole (image_id, label, is_pathold, file) VALUES (%s,%s,%s,%s)", params)                 
+            params = [id, "lonitude", "latitude" ,"imagepath"]   
+            cluster.connect().execute("INSERT INTO images.pathole (patholeid, longitude, latitude, imagepath) VALUES (%s,%s,%s,%s)", params)                 
     return render_template("home.html", label=output, imagesource=file_path)
 
 @app.route('/uploads/<filename>')
