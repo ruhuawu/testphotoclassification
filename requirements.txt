@@ -58,6 +58,5 @@ json5==0.8.5
 cassandra-driver==3.20.2
 pathlib
 object-detection
-object-detection-protos
 
 
