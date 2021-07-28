@@ -53,3 +53,11 @@ urllib3==1.25.8
 webencodings==0.5.1
 Werkzeug==1.0.1
 wrapt==1.12.1
+Flask==1.1.1
+json5==0.8.5
+cassandra-driver==3.20.2
+pathlib
+object-detection
+object-detection-protos
+
+
