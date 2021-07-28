@@ -1,13 +1,14 @@
 import os
+from threading import Thread
 from flask import Flask, request, redirect, url_for, send_from_directory, render_template
 from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from keras.models import Sequential, load_model
 from werkzeug.utils import secure_filename
 import numpy as np
 from keras.applications.vgg16 import VGG16, decode_predictions
-from PIL import Image
 import uuid
 from cassandraCluster import cassandraCluster as dbcluster
+import json
 
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'png'])
 IMAGE_SIZE = (224, 224)
@@ -25,36 +26,45 @@ def predict(file):
     preds = vgg16.predict(img)
     vgg16.predict(img)
     probs = decode_predictions(preds, top=3)[0]
-    output = {probs[0][1]:probs[0][2]}
-    return output
+    return probs
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+def savePatholeInfoInCassandra(pathole): 
+    db = dbcluster(app)
+    session = db.connection.connect()
+    id = uuid.uuid1()
+    params = [id, "lonitude", "latitude" ,"imagepath"]   
+    session.execute("INSERT INTO images.pathole (patholeid, longitude, latitude, imagepath) VALUES (%s,%s,%s,%s)", params)                 
 
+def saveImageInLocal(pathole):
+    filename = secure_filename(pathole.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    pathole.save(file_path)
+    return file_path
+    
 @app.route("/")
 def template_test():
     return render_template('home.html', label='', imagesource='file://null')
 
-
-@app.route('/', methods=['GET', 'POST'])
-def upload_file():
-    db = dbcluster(app)
-    cluster = db.connection
-    if request.method == 'POST':
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            # save the info(image uuid, label/ispathole) in cassandra, for now not saving the image meta data
-            b=bytearray([])
-            id = uuid.uuid1()
-            output = predict(file_path)
-            label = list(output.keys())[0]
-            params = [id, "lonitude", "latitude" ,"imagepath"]   
-            cluster.connect().execute("INSERT INTO images.pathole (patholeid, longitude, latitude, imagepath) VALUES (%s,%s,%s,%s)", params)                 
+@app.route('/', methods=['POST'])
+def predict_pathole_from_app():
+    file = request.files['file'] 
+    file_path = saveImageInLocal(file)
+    print(file_path)
+    probs = predict(file)
+    output = {probs[0][1]:probs[0][2]}
     return render_template("home.html", label=output, imagesource=file_path)
+    
+@app.route('/predict', methods=['POST'])
+def predict_pathole_from_api():
+    file = request.files['file']             
+    probs = predict(file)
+    if probs[0][2] >0 :
+       savePatholeInfoInCassandra(file)
+       print(json.dumps(str(probs[0])))
+    return json.dumps(str(probs[0]))
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
