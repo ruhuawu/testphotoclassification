@@ -12,6 +12,18 @@ to run in local:
 
 3.pip install -r pothole/requirements.txt
 
-4.install tensorflow if not yet following here https://app.slack.com/client/T041QRPTJ/C027JLNFG31/thread/C02EEM5A7V0-1631675388.035200
+4.install tensorflow if not yet following here:
+  
+  1)git clone https://github.com/tensorflow/models.git
+  
+  2)ls
 
-5.python application.py
+  3)cd models/research/
+
+  4)protoc object_detection/protos/*.proto --python_out=.
+
+  5)cp object_detection/packages/tf2/setup.py .
+
+  6)python -m pip install .
+
+5.run python application.py to start the app
