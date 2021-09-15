@@ -6,4 +6,5 @@ applies ML model to detect if there is any potholes in the uploaded image, if po
 
 to run in local:
 pip install -r requirements.txt
+
 python application.py
