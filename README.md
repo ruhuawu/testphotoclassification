@@ -6,6 +6,12 @@ applies ML model to detect if there is any potholes in the uploaded image, if po
 
 to run in local:
 
-pip install -r requirements.txt
+1.have python 3.6
 
-python application.py
+2.pip install -r requirements.txt
+
+3.pip install -r pothole/requirements.txt
+
+4.install tensorflow if not yet following here https://app.slack.com/client/T041QRPTJ/C027JLNFG31/thread/C02EEM5A7V0-1631675388.035200
+
+5.python application.py
