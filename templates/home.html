@@ -4,19 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
-  <title>Road Safety</title>
+  <title>Object Detection Server</title>
   <body class style="margin:10px;padding:10px">
     <div class="page-header" id="banner">
       <div class="row">
         <div class="col-lg-8 col-md-7 col-sm-6">
-          <h3>Pothole Detection Server</h3>
-          <p class="lead">Upload the image and find out if there is any pothole in it</p>
+          <h3>Object Detection Server</h3>
+          <h5>Is there any pothole on the road?</h3>
         </div>
       </div>
-      <form action="" method=post enctype=multipart/form-data>
+      <form action="/pothole" method=post enctype=multipart/form-data>
         <input type=file name=file>
         <input type=submit value=Upload>
-    </form>
+      </form>
+      
+      <br>
+      <br>
+      <div class="row">
+        <div class="col-lg-8 col-md-7 col-sm-6">
+          <h5>Is there any Grab logo in the photo?</h3>
+        </div>
+      </div>
+
+      <form action="/logo" method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+      </form>
     </div>
     <p style="margin-bottom:2cm;"></p>
     <div class="row">
@@ -26,12 +39,18 @@
           </div>
           <div class="bs-component">
             <table class="table table-hover">
+                <tr>
+                <th scope="row"> {{badqualityphoto}}</th>
+                </tr>
                 <tr class="table-active">
                   <th scope="col">Image</th>
                 </tr>
-                 <tr>
+                <tr>
+                  <th scope="row">  {{textsource}} </th>
+                </tr>
+                <tr>
                     <th scope="row"> <img width="224" height="224" src="{{imagesource}}" /> </th>
-                  </tr>
+                </tr>
             </table> 
         </div>
       </div>

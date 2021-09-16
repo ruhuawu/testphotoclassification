@@ -27,21 +27,19 @@ def saveImageInLocal(pathole):
 def template_test():
     return render_template('home.html', label='', imagesource='file://null')
 
-@app.route('/', methods=['POST'])
-def predict_pathole_from_app():
+@app.route('/pothole', methods=['POST'])
+def predict_pathole():
     file = request.files['file'] 
     file_path = saveImageInLocal(file)  
-    detector.detectPathole(file_path, file_path, True)
-    return render_template("home.html", imagesource=file_path)
+    probs = detector.detect('potholeDetection', file_path, file_path, True)
+    return render_template("home.html", imagesource=file_path, textsource="prob of pothole:"+str(probs[0]))
     
-@app.route('/predict', methods=['POST'])
-def predict_pathole_from_api():
+@app.route('/logo', methods=['POST'])
+def predict_logo():
     file = request.files['file']  
     file_path = saveImageInLocal(file)                    
-    probs = detector.detectPathole(file_path, file_path, False)  
-    if(probs[0] >= 0.5):
-        savePatholeInfoInCassandra(file_path)
-    return json.dumps(str(probs))
+    probs = detector.detect('logoDetection',file_path, file_path, True)  
+    return render_template("home.html", imagesource=file_path, textsource="prob of Grab logo:"+str(probs[0]))
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):

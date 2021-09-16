@@ -11,33 +11,36 @@ from object_detection.utils import visualization_utils as viz_utils
 import matplotlib
 import matplotlib.pyplot as plt
 
-filenames = list(pathlib.Path('pothole/training/').glob('*.index'))
 
-filenames.sort()
-print(filenames)
-#recover our saved model
-pipeline_config = 'pothole/mobilenet_v2.config'
-#generally you want to put the last ckpt from training in here
-model_dir = str(filenames[-1]).replace('.index','')
-configs = config_util.get_configs_from_pipeline_file(pipeline_config)
-model_config = configs['model']
-detection_model = model_builder.build(
+def prepare_files_for_model(modeName):
+
+  filenames = list(pathlib.Path('models/'+modeName+'/').glob('*.index'))
+
+  filenames.sort()
+  #recover our saved model
+  pipeline_config = 'models/'+modeName+'/mobilenet_v2.config'
+  #generally you want to put the last ckpt from training in here
+  # model_dir = str(filenames[-1]).replace('.index','')
+  configs = config_util.get_configs_from_pipeline_file(pipeline_config)
+  model_config = configs['model']
+  global detection_model 
+  detection_model = model_builder.build(
       model_config=model_config, is_training=False)
 
-# Restore checkpoint
-ckpt = tf.compat.v2.train.Checkpoint(
+  # Restore checkpoint
+  ckpt = tf.compat.v2.train.Checkpoint(
       model=detection_model)
-ckpt.restore(os.path.join(str(filenames[-1]).replace('.index','')))
+  ckpt.restore(os.path.join(str(filenames[-1]).replace('.index','')))
 
-label_map_path =  'pothole/labelmap.pbtxt' #configs['eval_input_config'].label_map_path
-label_map = label_map_util.load_labelmap(label_map_path)
-categories = label_map_util.convert_label_map_to_categories(
+  label_map_path =  'models/'+modeName+'/label_map.pbtxt' #configs['eval_input_config'].label_map_path
+  label_map = label_map_util.load_labelmap(label_map_path)
+  categories = label_map_util.convert_label_map_to_categories(
     label_map,
     max_num_classes=label_map_util.get_max_label_map_index(label_map),
     use_display_name=True)
-category_index = label_map_util.create_category_index(categories)
-label_map_dict = label_map_util.get_label_map_dict(label_map, use_display_name=True)
-
+  global category_index 
+  category_index= label_map_util.create_category_index(categories)
+ 
 
 def get_model_detection_function(model):
   """Get a tf.function for detection."""
@@ -45,16 +48,17 @@ def get_model_detection_function(model):
   @tf.function
   def detect_fn(image):
     """Detect objects in image."""
-
+    
     image, shapes = model.preprocess(image)
+    
     prediction_dict = model.predict(image, shapes)
+  
     detections = model.postprocess(prediction_dict, shapes)
-
-    return detections, prediction_dict, tf.reshape(shapes, [-1])
+ 
+    return detections
 
   return detect_fn
 
-detect_fn = get_model_detection_function(detection_model)
 
 
 def load_image_into_numpy_array(path):
@@ -64,11 +68,13 @@ def load_image_into_numpy_array(path):
     return np.array(image.getdata()).reshape(
     (im_height, im_width, 3)).astype(np.uint8)
 
-def detectPathole(image_path, file_path, storeimg):
+def detect(modelName, image_path, file_path, storeimg):
+    prepare_files_for_model(modelName)
+    detect_fn = get_model_detection_function(detection_model)
     image_np = load_image_into_numpy_array(image_path)
     input_tensor = tf.convert_to_tensor(
     np.expand_dims(image_np, 0), dtype=tf.float32)
-    detections, predictions_dict, shapes = detect_fn(input_tensor)
+    detections = detect_fn(input_tensor)
     if(storeimg):
       label_id_offset = 1
       image_np_with_detections = image_np.copy()
